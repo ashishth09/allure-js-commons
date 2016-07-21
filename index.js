@@ -33,7 +33,9 @@ Allure.prototype.endSuite = function(timestamp) {
     var suite = this.getCurrentSuite();
     suite.end(timestamp);
     if(suite.hasTests()) {
-        writer.writeSuite(this.options.targetDir, suite);
+    	//patched code
+       this.options.targetDir = process.env['XUNIT_FILE']  || this.options.targetDir
+	writer.writeSuite(this.options.targetDir, suite);
     }
     this.suites.shift();
 };
@@ -60,10 +62,6 @@ Allure.prototype.startStep = function(stepName, timestamp) {
 
 Allure.prototype.endStep = function(status, timestamp) {
     var suite = this.getCurrentSuite();
-    if(!(suite.currentStep instanceof Step)) {
-        console.warn('allure-js-commons: Unexpected endStep(). There is no any steps running');
-        return;
-    }
     suite.currentStep.end(status, timestamp);
     suite.currentStep = suite.currentStep.parent;
 };
@@ -73,7 +71,9 @@ Allure.prototype.setDescription = function(description) {
 };
 
 Allure.prototype.addAttachment = function(attachmentName, buffer, type) {
-    var info = util.getBufferInfo(buffer, type),
+	//patched code
+    this.options.targetDir = process.env['XUNIT_FILE']  || this.options.targetDir
+	var info = util.getBufferInfo(buffer, type),
         name = writer.writeBuffer(this.options.targetDir, buffer, info.ext),
         attachment = new Attachment(attachmentName, name, buffer.length, info.mime);
     this.getCurrentSuite().currentStep.addAttachment(attachment);
